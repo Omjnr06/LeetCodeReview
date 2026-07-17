@@ -30,10 +30,17 @@ def is_target(company):
         return None
     if n in _CANON:
         return _CANON[n]
+    tokens = n.split()
+    tokenset = set(tokens)
     for canon_norm, canon in _CANON.items():
-        if canon_norm and (canon_norm in n or n in canon_norm) and len(n) >= 4:
-            return canon
-    best = difflib.get_close_matches(n, list(_CANON.keys()), n=1, cutoff=0.9)
+        cwords = canon_norm.split()
+        if len(cwords) == 1:
+            if cwords[0] in tokenset:
+                return canon
+        else:
+            if canon_norm in n:
+                return canon
+    best = difflib.get_close_matches(n, list(_CANON.keys()), n=1, cutoff=0.92)
     if best:
         return _CANON[best[0]]
     return None

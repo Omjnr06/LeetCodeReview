@@ -6,20 +6,25 @@ from email.message import EmailMessage
 import config
 
 
+def _ascii(s):
+    return s.encode("ascii", "ignore").decode("ascii").strip()
+
+
 def ntfy_push(posting, tier):
     if tier == "A":
-        priority, prefix, tags = "5", "🎯 TARGET", "dart,rotating_light"
+        priority, label, tags = "5", "TARGET", "dart,rotating_light"
     else:
-        priority, prefix, tags = "2", "🆕", "seedling"
-    title = f"{prefix} {posting['company']}"
-    body = f"{posting['title']}\n{posting['location']} · {posting.get('season') or 'season n/a'} · [{posting['source']}]"
+        priority, label, tags = "2", "NEW", "seedling"
+    title = _ascii(f"{label}: {posting['company']}") or label
+    body = f"{posting['title']}\n{posting['location']} - {posting.get('season') or 'season n/a'} [{posting['source']}]"
     headers = {
-        "Title": title.encode("utf-8"),
+        "Title": title,
         "Priority": priority,
         "Tags": tags,
         "Click": posting["url"],
-        "Actions": f"view, Open posting, {posting['url']}",
     }
+    if posting["url"] and "," not in posting["url"]:
+        headers["Actions"] = f"view, Open posting, {posting['url']}"
     req = urllib.request.Request(
         f"{config.NTFY_SERVER}/{config.NTFY_TOPIC}",
         data=body.encode("utf-8"), headers=headers, method="POST",
@@ -29,6 +34,31 @@ def ntfy_push(posting, tier):
         return True
     except Exception as e:
         print(f"  ntfy failed for {posting['company']}: {e}")
+        return False
+
+
+def send_email(subject, body_text):
+    host = os.environ.get("SMTP_HOST")
+    user = os.environ.get("SMTP_USER")
+    pw = os.environ.get("SMTP_PASS")
+    to = os.environ.get("MAIL_TO")
+    if not all([host, user, pw, to]):
+        print("  email skipped (SMTP secrets not set)")
+        return False
+    port = int(os.environ.get("SMTP_PORT", "465"))
+    msg = EmailMessage()
+    msg["Subject"] = subject
+    msg["From"] = user
+    msg["To"] = to
+    msg.set_content(body_text)
+    try:
+        ctx = ssl.create_default_context()
+        with smtplib.SMTP_SSL(host, port, context=ctx) as s:
+            s.login(user, pw)
+            s.send_message(msg)
+        return True
+    except Exception as e:
+        print(f"  email failed: {e}")
         return False
 
 

@@ -8,6 +8,10 @@ import classify
 import notify
 
 
+def _now():
+    return datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
+
+
 def load_state():
     if not os.path.exists(config.STATE_FILE):
         return None
@@ -28,7 +32,7 @@ def append_log(rows):
             w.writerow(["ts", "tier", "company", "title", "location", "season", "sponsorship", "source", "url"])
         for p, tier in rows:
             w.writerow([
-                datetime.datetime.utcnow().isoformat(timespec="seconds") + "Z",
+                _now(),
                 tier, p["company"], p["title"], p["location"],
                 p.get("season", ""), p.get("sponsorship", ""), p["source"], p["url"],
             ])
@@ -53,7 +57,7 @@ def dedupe(postings):
 
 
 def main():
-    now = datetime.datetime.utcnow().isoformat(timespec="seconds") + "Z"
+    now = _now()
     postings, errors = sources.fetch_all()
     if errors:
         for k, v in errors.items():

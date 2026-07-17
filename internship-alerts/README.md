@@ -19,7 +19,7 @@ This installs into a subfolder of a repo you already have (e.g. `LeetCodeReview`
 **Layout after install:**
 ```
 your-repo/                     (main branch — your stuff, untouched by the bot)
-├── Arrays-and-Hashing/        your LeetCode folders
+├── Arrays-and-Hashing/        LeetCode folders
 ├── Stacks/  Two-Pointers/ ...
 ├── internship-alerts/         <- add these files here
 │   ├── config.py  sources.py  classify.py  notify.py  main.py  README.md

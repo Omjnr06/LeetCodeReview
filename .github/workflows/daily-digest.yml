@@ -1,0 +1,55 @@
+name: daily-digest
+
+on:
+  schedule:
+    - cron: "0 12 * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: daily-digest
+  cancel-in-progress: false
+
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code (main)
+        uses: actions/checkout@v4
+
+      - name: Checkout state branch
+        uses: actions/checkout@v4
+        with:
+          ref: bot-state
+          path: _state
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Build daily board
+        working-directory: internship-alerts
+        env:
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          MAIL_TO: ${{ secrets.MAIL_TO }}
+        run: python digest.py
+
+      - name: Publish board to bot-state branch
+        run: |
+          cp internship-alerts/OPEN_ROLES.md _state/OPEN_ROLES.md
+          cd _state
+          git config user.name "intern-alerts-bot"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add OPEN_ROLES.md
+          if git diff --cached --quiet; then
+            echo "no board change"
+          else
+            git commit -m "board: $(date -u +%FT%TZ)"
+            git push origin HEAD:bot-state
+          fi

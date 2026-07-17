@@ -4,7 +4,7 @@ NTFY_TOPIC = os.environ.get("NTFY_TOPIC", "Omjnr-06-internship-grind")
 NTFY_SERVER = "https://ntfy.sh"
 
 TIER_A_TARGETS = {
-    "rippling","google", "spotify", "apple", "meta", "microsoft", "databricks", "intuit",
+    "google", "spotify", "apple", "meta", "microsoft", "databricks", "intuit",
     "disney", "tesla", "tiktok", "visa", "amazon", "waymo",
     "wealthsimple", "shopify", "bloomberg", "ramp", "datadog", "plaid",
     "cockroach labs", "unitedmasters",
