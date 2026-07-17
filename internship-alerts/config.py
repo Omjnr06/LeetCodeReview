@@ -1,6 +1,6 @@
 import os
 
-NTFY_TOPIC = os.environ.get("NTFY_TOPIC", "Omjnr-06-internship-grind")
+NTFY_TOPIC = os.environ.get("NTFY_TOPIC") or "Omjnr-06-internship-grind"
 NTFY_SERVER = "https://ntfy.sh"
 
 TIER_A_TARGETS = {
