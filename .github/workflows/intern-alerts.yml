@@ -38,6 +38,8 @@ jobs:
         working-directory: internship-alerts
         env:
           NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          RESEND_FROM: ${{ secrets.RESEND_FROM }}
           SMTP_HOST: ${{ secrets.SMTP_HOST }}
           SMTP_PORT: ${{ secrets.SMTP_PORT }}
           SMTP_USER: ${{ secrets.SMTP_USER }}
