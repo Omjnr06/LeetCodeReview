@@ -3,6 +3,7 @@ import ssl
 import json
 import smtplib
 import urllib.request
+import urllib.error
 from email.message import EmailMessage
 import config
 
@@ -37,11 +38,12 @@ def ntfy_push(posting, tier):
 
 
 def _send_via_resend(subject, body_text):
-    key = os.environ.get("RESEND_API_KEY")
-    to = os.environ.get("MAIL_TO")
+    key = (os.environ.get("RESEND_API_KEY") or "").strip()
+    to = (os.environ.get("MAIL_TO") or "").strip()
     if not key or not to:
         return None
-    frm = os.environ.get("RESEND_FROM", "onboarding@resend.dev")
+    frm = (os.environ.get("RESEND_FROM") or "onboarding@resend.dev").strip()
+    print(f"  [resend] key_len={len(key)} starts_ok={key.startswith('re_')} to={to}")
     payload = json.dumps({"from": frm, "to": [to], "subject": subject, "text": body_text}).encode()
     req = urllib.request.Request(
         "https://api.resend.com/emails", data=payload,
@@ -52,6 +54,14 @@ def _send_via_resend(subject, body_text):
         urllib.request.urlopen(req, timeout=20)
         print("  email sent via Resend")
         return True
+    except urllib.error.HTTPError as e:
+        detail = ""
+        try:
+            detail = e.read().decode("utf-8", "replace")
+        except Exception:
+            pass
+        print(f"  resend failed: HTTP {e.code} {detail}")
+        return False
     except Exception as e:
         print(f"  resend failed: {e}")
         return False
