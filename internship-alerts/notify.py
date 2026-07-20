@@ -29,7 +29,7 @@ def _track_action(posting, url):
     )
     if "," in track_url or ";" in track_url:
         return None
-    return f"http, Applied, {track_url}, method=POST"
+    return f"view, Applied, {track_url}"
 
 
 def ntfy_push(posting, tier):
