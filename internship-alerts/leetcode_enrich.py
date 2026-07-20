@@ -23,9 +23,17 @@ HEADERS = {
 def _req(method, path, body=None):
     data = json.dumps(body).encode() if body is not None else None
     req = urllib.request.Request(API + path, data=data, headers=HEADERS, method=method)
-    with urllib.request.urlopen(req, timeout=30) as r:
-        return json.loads(r.read().decode())
-
+    try:
+        with urllib.request.urlopen(req, timeout=30) as r:
+            return json.loads(r.read().decode())
+    except urllib.error.HTTPError as e:
+        detail = ""
+        try:
+            detail = e.read().decode("utf-8", "replace")
+        except Exception:
+            pass
+        print(f"  [notion {e.code}] {method} {path} -> {detail}")
+        raise
 
 def slug_from_url(url):
     u = (url or "").strip().rstrip("/").split("?")[0]
